@@ -93,11 +93,7 @@ const WorkflowCompile = {
 
   async compileAndSave(options) {
     const {contracts, compilations} = await this.compile(options);
-    await this.save(options, {contracts, compilations});
-    return {
-      contracts,
-      compilations
-    };
+    return await this.save(options, {contracts, compilations});
   },
 
   reportCompilationStarted,
@@ -117,13 +113,39 @@ const WorkflowCompile = {
           directory: config.working_directory
         }
       });
-      ({contracts} = await project.loadCompile({
+      ({contracts, compilations} = await project.loadCompile({
         result: {contracts, compilations}
       }));
     }
 
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);
     await config.artifactor.saveAll(artifacts);
+
+    debug("contracts %o", contracts);
+
+    return { contracts, compilations };
+  },
+
+  async assignNames(options, { contracts }) {
+    const config = prepareConfig(options);
+
+    if (!config.db || !config.db.enabled || contracts.length === 0) {
+      return;
+    }
+
+    const db = connect(config);
+    const project = await Project.initialize({
+      db,
+      project: {
+        directory: config.working_directory
+      }
+    });
+
+    await project.assignNames({
+      assignments: {
+        contracts: contracts.map(({ db: { contract } }) => contract)
+      }
+    });
   }
 };
 
