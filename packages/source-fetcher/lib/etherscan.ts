@@ -173,6 +173,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   ): Types.SourceInfo {
     const filename = makeFilename(result.ContractName);
     return {
+      contractName: result.ContractName,
       sources: {
         [filename]: result.SourceCode
       },
@@ -189,6 +190,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     sources: Types.SolcSources
   ): Types.SourceInfo {
     return {
+      contractName: result.ContractName,
       sources: this.processSources(sources),
       options: {
         language: "Solidity",
@@ -203,6 +205,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     jsonInput: Types.SolcInput
   ): Types.SourceInfo {
     return {
+      contractName: result.ContractName,
       sources: this.processSources(jsonInput.sources),
       options: {
         language: jsonInput.language,
